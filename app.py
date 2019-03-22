@@ -8,21 +8,22 @@ import facenet
 import tensorflow as tf
 import detect_face
 import numpy as np
+from scipy import misc
 
-app = Flask(__name__)
+app = Flask(__name__ , static_url_path='/faces/')
 dropzone = Dropzone(app)
 
 
 app.config['SECRET_KEY'] = 'secretkey'
 
 # Dropzone settings
-app.config['DROPZONE_UPLOAD_MULTIPLE'] = True
+app.config['DROPZONE_UPLOAD_MULTIPLE'] = False
 app.config['DROPZONE_ALLOWED_FILE_CUSTOM'] = True
 app.config['DROPZONE_ALLOWED_FILE_TYPE'] = 'image/*'
 app.config['DROPZONE_REDIRECT_VIEW'] = 'results'
 
 # Uploads settings
-app.config['UPLOADED_PHOTOS_DEST'] = os.getcwd() + '/uploads/new'
+app.config['UPLOADED_PHOTOS_DEST'] = os.getcwd() + '/uploads/photos'
 
 photos = UploadSet('photos', IMAGES)
 configure_uploads(app, photos)
@@ -31,6 +32,9 @@ patch_request_class(app)  # set maximum file size, default is 16MB
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    file_urls = os.listdir("./uploads/photos/")
+    for image in file_urls:
+        os.remove("./uploads/photos/" + image)
     # set session for image results
     if "file_urls" not in session:
         session['file_urls'] = []
@@ -49,7 +53,8 @@ def index():
             )
 
             # append image urls
-            file_urls.append(photos.url(filename))            
+            file_urls.append(photos.url(filename))  
+        print(file_urls)          
         session['file_urls'] = file_urls
         return "uploading..."
     # return dropzone template on GET request
@@ -58,13 +63,11 @@ def index():
 
 @app.route('/results')
 def results():
-
-    datadir = './uploads/new'
-    output_dir_path = './faces'
+    datadir = './uploads/'
+    output_dir_path = './faces/'
     output_dir = os.path.expanduser(output_dir_path)
     dataset = facenet.get_dataset(datadir)
 
-    print('Creating networks and loading parameters')
     with tf.Graph().as_default():
         # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
         sess = tf.Session()
@@ -81,7 +84,7 @@ def results():
     # alignment using multiple processes
     random_key = np.random.randint(0, high=99999)
     bounding_boxes_filename = os.path.join(output_dir, 'bounding_boxes_%05d.txt' % random_key)
-    print('Goodluck')
+
     with open(bounding_boxes_filename, "w") as text_file:
         nrof_images_total = 0
         nrof_successfully_aligned = 0
@@ -110,16 +113,8 @@ def results():
                             img = facenet.to_rgb(img)
                             print('to_rgb data dimension: ', img.ndim)
                         img = img[:, :, 0:3]
-                        print('after data dimension: ', img.ndim)
-
                         bounding_boxes, _ = detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
                         nrof_faces = bounding_boxes.shape[0]
-                        print('detected_face: %d' % nrof_faces)
-                        print(bounding_boxes)
-                        print("")
-                        print(_)
-                        print("")
-                        print(bounding_boxes.shape)
                         counter = nrof_faces
                         det = bounding_boxes[:, 0:4]
                         img_size = np.asarray(img.shape)[0:2]
@@ -148,7 +143,7 @@ def results():
                                                     (det[:, 1] + det[:, 3]) / 2 - img_center[0]])
                                 offset_dist_squared = np.sum(np.power(offsets, 2.0), 0)
                                 index = np.argmax(bounding_box_size - offset_dist_squared * 2.0)  # some extra weight on the centering
-                                #det = det[index, :]
+                                # det = det[index, :]
                                 det_morethanone = det
                                 for i in range(nrof_faces):
                                     det = det_morethanone[int(i),:]
@@ -158,7 +153,7 @@ def results():
                                     bb_temp[1] = det[1]
                                     bb_temp[2] = det[2]
                                     bb_temp[3] = det[3]
-                                    try: 
+                                    try:
                                         cropped_temp = img[bb_temp[1]:bb_temp[3], bb_temp[0]:bb_temp[2], :]
                                         scaled_temp = misc.imresize(cropped_temp, (image_size, image_size), interp='bilinear')
                                     except (ValueError) as e:
@@ -176,7 +171,18 @@ def results():
         return redirect(url_for('index'))
         
     # set the file_urls and remove the session variable
-    file_urls = session['file_urls']
+    file_urls = os.listdir("./faces/photos/")
+    
+    for image in file_urls:
+        print("/faces/photos/"+image)
+        print("./uploads/photos/"+image)
+        os.rename("./faces/photos/"+image ,"./uploads/photos/"+image)
+    dir = "_uploads/photos/"
+    file_urls = [dir + x for x in file_urls]
+    
+    
+    # file_urls = session['file_urls']
+    print(file_urls)
     session.pop('file_urls', None)
     
     return render_template('results.html', file_urls=file_urls)
