@@ -53,8 +53,7 @@ def index():
             )
 
             # append image urls
-            file_urls.append(photos.url(filename))  
-        print(file_urls)          
+            file_urls.append(photos.url(filename))           
         session['file_urls'] = file_urls
         return "uploading..."
     # return dropzone template on GET request
