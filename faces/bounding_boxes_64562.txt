@@ -1,7 +1,0 @@
-./faces/photos/e.jpg 556 369 671 502
-./faces/photos/e.jpg 1646 318 1760 459
-./faces/photos/e.jpg 841 388 957 530
-./faces/photos/e.jpg 1132 384 1242 519
-./faces/photos/e.jpg 1416 369 1521 509
-./faces/photos/e.jpg 323 294 436 441
-./faces/photos/e.jpg 729 458 853 646

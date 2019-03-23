@@ -1,4 +1,0 @@
-./faces/photos/Chirac_Bush_Blair_Berlusconi.jpg 306 40 336 82
-./faces/photos/Chirac_Bush_Blair_Berlusconi.jpg 197 45 228 89
-./faces/photos/Chirac_Bush_Blair_Berlusconi.jpg 435 61 466 100
-./faces/photos/Chirac_Bush_Blair_Berlusconi.jpg 72 36 105 82
