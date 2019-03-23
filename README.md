@@ -1,4 +1,4 @@
-# flask-multiple-file-upload
+# 
 
 Small demo app for uploading multiple files with Flask, Flask-Uploads, and Flask-Dropszone
 
