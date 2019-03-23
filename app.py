@@ -185,3 +185,6 @@ def results():
     session.pop('file_urls', None)
     
     return render_template('results.html', file_urls=file_urls)
+
+if __name__ == "__main__":
+    app.run()
